@@ -1,37 +1,44 @@
 {
-  "name": "gptuning",
+  "name": "osu-beatmap-manager",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "start": "vite",
-    "electron": "electron .",
-    "dev": "concurrently \"vite\" \"npm run electron\"",
-    "build": "vite build",
+    "electron": "cross-env NODE_ENV=development electron .",
+    "dev": "concurrently \"cross-env NODE_ENV=development VITE_DEV_SERVER_PORT=3001 vite --port 3001\" \"npm run electron\"",
+    "web": "cross-env NODE_ENV=development vite --port 3001",
+    "build": "cross-env NODE_ENV=production vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "cross-env NODE_ENV=production vite preview"
   },
   "dependencies": {
+    "electron": "^23.0.0",
+    "glob": "^10.3.10",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "electron": "^23.0.0"
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.25.9",
     "@eslint/js": "^9.21.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^6.0.0",
+    "cross-env": "^7.0.3",
     "electron": "^35.0.0",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
-    "vite": "^2.0.0",
-    "concurrently": "^6.0.0"
+    "vite": "^6.2.1"
   },
-  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "description": "Aplikacja do zarządzania beatmapami Osu!",
   "main": "main.js",
-  "keywords": [],
+  "keywords": [
+    "osu",
+    "beatmap",
+    "manager"
+  ],
   "author": "",
   "license": "ISC"
 }
