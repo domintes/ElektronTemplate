@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { FaTimes, FaTrash, FaPlus } from 'react-icons/fa'
 
 function ProfileManager({ profiles, activeProfile, onSwitch, onCreate, onDelete, onClose }) {
   const [newProfileName, setNewProfileName] = useState('')
@@ -20,7 +21,9 @@ function ProfileManager({ profiles, activeProfile, onSwitch, onCreate, onDelete,
 
   return (
     <div className="modal" style={{ zIndex: 3000, minWidth: 340 }}>
-      <button className="modal-close" onClick={onClose}>✕</button>
+      <button className="modal-close" onClick={onClose} aria-label="Zamknij">
+        <FaTimes />
+      </button>
       <h2>Zarządzaj profilami</h2>
       <ul style={{ listStyle: 'none', padding: 0, margin: '1rem 0', maxHeight: 120, overflowY: 'auto' }}>
         {profiles.map(profile => (
@@ -33,16 +36,17 @@ function ProfileManager({ profiles, activeProfile, onSwitch, onCreate, onDelete,
               {profile} {profile === activeProfile && '(aktywny)'}
             </button>
             <button
-              style={{ background: '#9b3535', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px' }}
+              style={{ background: '#9b3535', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => onDelete(profile)}
               disabled={profiles.length === 1}
+              aria-label={`Usuń profil ${profile}`}
             >
-              Usuń
+              <FaTrash /> Usuń
             </button>
           </li>
         ))}
       </ul>
-      <div style={{ margin: '1rem 0' }}>
+      <div style={{ margin: '1rem 0', display: 'flex', alignItems: 'center', gap: 8 }}>
         <input
           type="text"
           placeholder="Nowy profil..."
@@ -50,7 +54,9 @@ function ProfileManager({ profiles, activeProfile, onSwitch, onCreate, onDelete,
           onChange={e => setNewProfileName(e.target.value)}
           style={{ padding: 6, borderRadius: 4, border: '1px solid #ccc', marginRight: 8 }}
         />
-        <button onClick={handleCreate}>Utwórz</button>
+        <button onClick={handleCreate} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <FaPlus /> Utwórz
+        </button>
       </div>
       {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
     </div>

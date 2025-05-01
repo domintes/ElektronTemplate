@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import ProfileSelector from './ProfileSelector'
 import ProfileManager from './ProfileManager'
 import SettingsDrawer from './SettingsDrawer'
+import Menu from './Menu'
 import './App.css'
 
 // Sprawdzanie, czy aplikacja działa w środowisku Electron
@@ -343,34 +344,15 @@ function App() {
   
   return (
     <div className="app-container">
-      {/* Settings Drawer & Profile Manager */}
-      <SettingsDrawer
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        onThemeToggle={toggleDarkMode}
+      <Menu
         darkMode={darkMode}
-        onManageProfiles={() => { setShowProfileManager(true); setShowSettings(false) }}
+        onThemeToggle={toggleDarkMode}
+        onProfileManager={() => setShowProfileManager(true)}
         onExit={handleExit}
       />
-      {showProfileManager && (
-        <ProfileManager
-          profiles={profiles}
-          activeProfile={activeProfile}
-          onSwitch={handleSwitchProfile}
-          onCreate={handleCreateProfile}
-          onDelete={handleDeleteProfile}
-          onClose={() => setShowProfileManager(false)}
-        />
-      )}
       <div className="app-header">
         <h1>Osu! Beatmap Manager</h1>
-        <button 
-          onClick={toggleDarkMode}
-          className="theme-toggle"
-          title={darkMode ? "Przełącz na jasny motyw" : "Przełącz na ciemny motyw"}
-        >
-          {darkMode ? '☀️' : '🌙'}
-        </button>
+        {/* Removed old theme toggle button, now in Menu */}
       </div>
       
       {!isElectronEnv && (
