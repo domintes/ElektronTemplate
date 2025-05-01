@@ -14,8 +14,10 @@
   "dependencies": {
     "electron": "^23.0.0",
     "glob": "^10.3.10",
+    "jotai": "^2.12.3",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.25.9",

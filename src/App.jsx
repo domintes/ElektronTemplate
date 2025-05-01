@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+import ProfileSelector from './ProfileSelector'
+import ProfileManager from './ProfileManager'
+import SettingsDrawer from './SettingsDrawer'
 import './App.css'
 
 // Sprawdzanie, czy aplikacja działa w środowisku Electron
@@ -28,6 +31,26 @@ function App() {
   const [showMoveMenu, setShowMoveMenu] = useState(false)
   
   const ITEMS_PER_PAGE = 100
+
+  // Profile state
+  const [profiles, setProfiles] = useState(() => {
+    const stored = localStorage.getItem('profiles')
+    return stored ? JSON.parse(stored) : ['Domyślny']
+  })
+  const [activeProfile, setActiveProfile] = useState(() => {
+    const remembered = localStorage.getItem('rememberedProfile')
+    if (remembered && JSON.parse(localStorage.getItem('rememberChoice'))) {
+      return remembered
+    }
+    return ''
+  })
+  const [showProfileSelector, setShowProfileSelector] = useState(!activeProfile)
+  const [rememberChoice, setRememberChoice] = useState(() => {
+    const stored = localStorage.getItem('rememberChoice')
+    return stored ? JSON.parse(stored) : false
+  })
+  const [showProfileManager, setShowProfileManager] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   
   // Sprawdzenie środowiska przy montowaniu komponentu
   useEffect(() => {
@@ -49,6 +72,18 @@ function App() {
       setFilteredBeatmaps(exampleBeatmaps)
     }
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem('profiles', JSON.stringify(profiles))
+  }, [profiles])
+  useEffect(() => {
+    if (activeProfile) {
+      localStorage.setItem('rememberedProfile', activeProfile)
+    }
+  }, [activeProfile])
+  useEffect(() => {
+    localStorage.setItem('rememberChoice', JSON.stringify(rememberChoice))
+  }, [rememberChoice])
   
   // Funkcja przełączająca motyw
   const toggleDarkMode = () => {
@@ -262,9 +297,71 @@ function App() {
   useEffect(() => {
     if (!loading) setProgress(null)
   }, [loading])
+
+  // Profile actions
+  const handleSelectProfile = (profile) => {
+    setActiveProfile(profile)
+    setShowProfileSelector(false)
+  }
+  const handleCreateProfile = (name) => {
+    setProfiles(p => [...p, name])
+    setActiveProfile(name)
+    setShowProfileSelector(false)
+  }
+  const handleSwitchProfile = (profile) => {
+    setActiveProfile(profile)
+    setShowProfileManager(false)
+  }
+  const handleDeleteProfile = (profile) => {
+    if (profiles.length === 1) return
+    const idx = profiles.indexOf(profile)
+    const newProfiles = profiles.filter(p => p !== profile)
+    setProfiles(newProfiles)
+    if (activeProfile === profile) {
+      setActiveProfile(newProfiles[0])
+    }
+  }
+
+  // Settings actions
+  const handleExit = () => {
+    if (window.electron && window.electron.ipcRenderer) {
+      window.close()
+    }
+  }
+  
+  if (showProfileSelector || !activeProfile) {
+    return (
+      <ProfileSelector
+        profiles={profiles}
+        onSelect={handleSelectProfile}
+        onCreate={handleCreateProfile}
+        rememberChoice={rememberChoice}
+        setRememberChoice={setRememberChoice}
+      />
+    )
+  }
   
   return (
     <div className="app-container">
+      {/* Settings Drawer & Profile Manager */}
+      <SettingsDrawer
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        onThemeToggle={toggleDarkMode}
+        darkMode={darkMode}
+        onManageProfiles={() => { setShowProfileManager(true); setShowSettings(false) }}
+        onExit={handleExit}
+      />
+      {showProfileManager && (
+        <ProfileManager
+          profiles={profiles}
+          activeProfile={activeProfile}
+          onSwitch={handleSwitchProfile}
+          onCreate={handleCreateProfile}
+          onDelete={handleDeleteProfile}
+          onClose={() => setShowProfileManager(false)}
+        />
+      )}
       <div className="app-header">
         <h1>Osu! Beatmap Manager</h1>
         <button 
