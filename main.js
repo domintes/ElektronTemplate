@@ -52,10 +52,6 @@ function createWindow() {
     })
   }
 
-  // Otwórz narzędzia deweloperskie w trybie deweloperskim
-  if (process.env.NODE_ENV !== 'production') {
-    mainWindow.webContents.openDevTools()
-  }
 }
 
 // Inicjalizacja aplikacji po gotowości Electron
@@ -143,64 +139,50 @@ function setupIpcHandlers() {
 async function findBeatmaps(folderPath) {
   try {
     // Znajdź wszystkie pliki .osu rekurencyjnie
-    const osuFiles = await glob('**/*.osu', { cwd: folderPath, absolute: true })
+    const osuFiles = await glob.glob('**/*.osu', { cwd: folderPath, absolute: true })
     
     // Mapa do śledzenia folderów beatmap (aby uniknąć duplikatów)
     const beatmapFolders = new Map()
-    
     // Mapa do grupowania beatmap wg folderu i tytułu+artysta
     const uniqueBeatmaps = new Map()
-    
-    // Przetwarzamy każdy plik .osu
-    const beatmapsPromises = osuFiles.map(async (osuFilePath) => {
-      try {
-        const folderPath = dirname(osuFilePath)
-        
-        // Jeśli folder już był przetworzony, pomijamy plik
-        if (beatmapFolders.has(folderPath)) {
+
+    // Przetwarzanie plików partiami (batch/pool)
+    const BATCH_SIZE = 100
+    let beatmaps = []
+    let loaded = 0
+    const total = osuFiles.length
+    for (let i = 0; i < osuFiles.length; i += BATCH_SIZE) {
+      const batch = osuFiles.slice(i, i + BATCH_SIZE)
+      const beatmapsBatch = await Promise.all(batch.map(async (osuFilePath) => {
+        try {
+          const folderPath = dirname(osuFilePath)
+          if (beatmapFolders.has(folderPath)) return null
+          const metadata = await parseOsuFile(osuFilePath)
+          if (!metadata) return null
+          beatmapFolders.set(folderPath, true)
+          const beatmapKey = `${metadata.artist}_${metadata.title}_${folderPath}`
+          if (uniqueBeatmaps.has(beatmapKey)) return null
+          const beatmap = {
+            id: folderPath,
+            path: folderPath,
+            osuFile: osuFilePath,
+            ...metadata
+          }
+          uniqueBeatmaps.set(beatmapKey, beatmap)
+          return beatmap
+        } catch (error) {
+          console.error(`Błąd przy przetwarzaniu pliku ${osuFilePath}:`, error)
           return null
         }
-        
-        // Parsujemy metadane pliku .osu
-        const metadata = await parseOsuFile(osuFilePath)
-        if (!metadata) return null
-        
-        // Dodajemy folder do mapy przetworzonych folderów
-        beatmapFolders.set(folderPath, true)
-        
-        // Tworzymy unikalny klucz dla beatmapy - artysta + tytuł + folder
-        const beatmapKey = `${metadata.artist}_${metadata.title}_${folderPath}`
-        
-        // Jeśli mapa z takim kluczem już istnieje, pomijamy
-        if (uniqueBeatmaps.has(beatmapKey)) {
-          return null
-        }
-        
-        const beatmap = {
-          id: folderPath, // Używamy ścieżki folderu jako unikalnego ID
-          path: folderPath,
-          osuFile: osuFilePath,
-          ...metadata
-        }
-        
-        // Dodajemy mapę do naszej kolekcji unikalnych beatmap
-        uniqueBeatmaps.set(beatmapKey, beatmap)
-        
-        return beatmap
-      } catch (error) {
-        console.error(`Błąd przy przetwarzaniu pliku ${osuFilePath}:`, error)
-        return null
+      }))
+      beatmaps = beatmaps.concat(beatmapsBatch.filter(b => b !== null))
+      loaded += batch.length
+      if (typeof mainWindow !== 'undefined' && mainWindow && mainWindow.webContents) {
+        mainWindow.webContents.send('beatmaps-progress', { loaded: Math.min(loaded, total), total })
       }
-    })
-    
-    // Czekamy na zakończenie wszystkich operacji parsowania
-    const beatmapsWithNulls = await Promise.all(beatmapsPromises)
-    
-    // Filtrujemy nullowe wyniki i sortujemy po artyście
-    const beatmaps = beatmapsWithNulls
-      .filter(beatmap => beatmap !== null)
-      .sort((a, b) => a.artist.localeCompare(b.artist))
-    
+    }
+    // Sortowanie po artyście
+    beatmaps.sort((a, b) => a.artist.localeCompare(b.artist))
     return beatmaps
   } catch (error) {
     console.error('Błąd przy wyszukiwaniu beatmap:', error)
@@ -342,7 +324,7 @@ async function moveBeatmaps(beatmapIds, destinationFolder) {
       }
       
       // Znajdź wszystkie pliki w folderze źródłowym
-      const files = await glob('*', { cwd: sourceFolderPath, absolute: true })
+      const files = await glob.glob('*', { cwd: sourceFolderPath, absolute: true })
       
       // Przenieś każdy plik do folderu docelowego
       for (const file of files) {

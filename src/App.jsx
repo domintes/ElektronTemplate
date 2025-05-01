@@ -23,6 +23,9 @@ function App() {
   const [message, setMessage] = useState('')
   const [isElectronEnv, setIsElectronEnv] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
+  const [progress, setProgress] = useState(null)
+  const [showActions, setShowActions] = useState(false)
+  const [showMoveMenu, setShowMoveMenu] = useState(false)
   
   const ITEMS_PER_PAGE = 100
   
@@ -237,6 +240,11 @@ function App() {
       setLoading(false)
       setMessage(`Błąd: ${error}`)
     })
+
+    // Obsługa postępu ładowania beatmap
+    window.electron.ipcRenderer.on('beatmaps-progress', (data) => {
+      setProgress(data)
+    })
   }, [sourceFolder, isElectronEnv])
   
   // Rozpoczęcie wyszukiwania beatmap po wybraniu folderu źródłowego (tylko w środowisku Electron)
@@ -249,6 +257,11 @@ function App() {
       window.electron.ipcRenderer.send('search-beatmaps', sourceFolder)
     }
   }, [sourceFolder, isElectronEnv])
+
+  // Resetuj postęp po zakończeniu ładowania
+  useEffect(() => {
+    if (!loading) setProgress(null)
+  }, [loading])
   
   return (
     <div className="app-container">
@@ -272,20 +285,61 @@ function App() {
       )}
       
       <div className="folder-section">
-        <div className="folder-item">
+        <div className="folder-item beatmap-source-input">
           <button onClick={handleChooseSourceFolder} disabled={loading || !isElectronEnv}>
             Wybierz folder źródłowy
           </button>
           <span className="folder-path">{sourceFolder || 'Nie wybrano'}</span>
         </div>
-        
-        <div className="folder-item">
-          <button onClick={handleChooseDestinationFolder} disabled={loading || !isElectronEnv}>
-            Wybierz folder docelowy
-          </button>
-          <span className="folder-path">{destinationFolder || 'Nie wybrano'}</span>
-        </div>
       </div>
+      
+      {beatmaps.length > 0 && !showMoveMenu && (
+        <div className="actions-bar">
+          <button onClick={() => setShowActions(true)} className="actions-btn">Akcje</button>
+        </div>
+      )}
+      
+      {showActions && !showMoveMenu && (
+        <div className="popup-menu">
+          <button className="popup-close" onClick={() => setShowActions(false)}>✕</button>
+          <div className="popup-content">
+            <button onClick={() => { setShowMoveMenu(true); setShowActions(false); }}>Przenieś beatmapy w inne lokalizację</button>
+          </div>
+        </div>
+      )}
+      
+      {showMoveMenu && (
+        <div className="popup-menu">
+          <button className="popup-close" onClick={() => { setShowMoveMenu(false); setDestinationFolder(''); }}>
+            ✕
+          </button>
+          <div className="popup-content">
+            <div style={{ marginBottom: 8 }}>
+              <button onClick={handleChooseDestinationFolder} disabled={loading || !isElectronEnv}>
+                Wybierz folder docelowy
+              </button>
+              {showMoveMenu && (
+                <div className="folder-item beatmap-destination-input">
+                  <button onClick={handleChooseDestinationFolder} disabled={loading || !isElectronEnv}>
+                    Wybierz folder docelowy
+                  </button>
+                  <span className="folder-path">{destinationFolder || 'Nie wybrano'}</span>
+                </div>
+              )}
+            </div>
+            <button 
+              onClick={() => { handleMoveBeatmaps(); setShowMoveMenu(false); }}
+              disabled={loading || selectedBeatmaps.length === 0 || !destinationFolder || !isElectronEnv}
+              className="move-button"
+            >
+              Wykonaj akcję
+            </button>
+            <button onClick={() => { setShowMoveMenu(false); setDestinationFolder(''); }} style={{ marginLeft: 8 }}>
+              Anuluj
+            </button>
+          </div>
+        </div>
+      )}
       
       {beatmaps.length > 0 && (
         <div className="search-section">
@@ -320,7 +374,11 @@ function App() {
       )}
       
       {loading ? (
-        <div className="loading">Ładowanie...</div>
+        <div className="loading">
+          {progress && progress.total > 0
+            ? `Wczytano ${progress.loaded} / ${progress.total}...`
+            : 'Ładowanie...'}
+        </div>
       ) : beatmaps.length > 0 ? (
         <>
           <div className="beatmaps-list">

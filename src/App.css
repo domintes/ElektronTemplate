@@ -376,3 +376,62 @@ body.dark-mode .web-notice {
   color: #ffb74d;
   border-color: #ff9800;
 }
+
+.popup-close {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  background-color: #9b3535;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 420px;
+  height: 280px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #9b3535;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.modal-close:hover {
+  background: #c0392b;
+}
+
+/* Dark mode for modal */
+body.dark-mode .modal {
+  background: #232323;
+  color: #e0e0e0;
+}
+body.dark-mode .modal-close {
+  background: #c0392b;
+  color: #fff;
+}
+body.dark-mode .modal-close:hover {
+  background: #e74c3c;
+}
