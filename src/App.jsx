@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAtom } from 'jotai'
-import { activeProfileAtom } from './store'
+import { activeProfileAtom, filteredBeatmapsAtom } from './store'
 import ProfileSelector from './ProfileSelector'
 import ProfileManager from './ProfileManager'
 import SettingsDrawer from './SettingsDrawer'
@@ -22,7 +22,6 @@ function App() {
   const [sourceFolder, setSourceFolder] = useState('')
   const [destinationFolder, setDestinationFolder] = useState('')
   const [beatmaps, setBeatmaps] = useState([])
-  const [filteredBeatmaps, setFilteredBeatmaps] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedBeatmaps, setSelectedBeatmaps] = useState([])
@@ -57,6 +56,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   
   const [, setActiveProfileAtom] = useAtom(activeProfileAtom);
+  const [filteredBeatmaps, setFilteredBeatmaps] = useAtom(filteredBeatmapsAtom);
 
   // Sprawdzenie środowiska przy montowaniu komponentu
   useEffect(() => {
@@ -338,6 +338,10 @@ function App() {
     }
   }
   
+  const handleBeatmapsFilter = (filtered) => {
+    setFilteredBeatmaps(filtered);
+  };
+
   if (showProfileSelector || !activeProfile) {
     return (
       <ProfileSelector
@@ -374,7 +378,7 @@ function App() {
         <h1>Osu! Beatmap Manager</h1>
       </div>
 
-      <FavoriteSection beatmaps={beatmaps} />
+      <FavoriteSection beatmaps={beatmaps} onFilter={handleBeatmapsFilter} />
       
       {!isElectronEnv && (
         <div className="web-notice">

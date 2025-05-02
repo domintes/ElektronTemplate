@@ -8,20 +8,18 @@ import {
   addFavoriteArtist,
   removeFavoriteArtist,
   addFavoriteMapper,
-  removeFavoriteMapper,
-  filteredBeatmapsAtom
+  removeFavoriteMapper
 } from '../../store';
 import CustomTags from '../CustomTags/CustomTags';
 import TagInput from '../TagInput/TagInput';
 import './favoriteSection.scss';
 
-export default function FavoriteSection({ beatmaps }) {
+export default function FavoriteSection({ beatmaps, onFilter }) {
   const [favoriteArtists, setFavoriteArtists] = useAtom(favoriteArtistsAtom);
   const [favoriteMappers, setFavoriteMappers] = useAtom(favoriteMappersAtom);
   const [activeProfile] = useAtom(activeProfileAtom);
   const [currentProfileArtists] = useAtom(currentProfileFavoriteArtistsAtom);
   const [currentProfileMappers] = useAtom(currentProfileFavoriteMappersAtom);
-  const [, setFilteredBeatmaps] = useAtom(filteredBeatmapsAtom);
 
   const handleArtistTagsChange = (tags) => {
     // Add new artists
@@ -36,7 +34,7 @@ export default function FavoriteSection({ beatmaps }) {
         removeFavoriteArtist(activeProfile, artist, setFavoriteArtists);
       }
     });
-    filterBeatmaps(tags, currentProfileMappers);
+    updateFilters(tags, currentProfileMappers);
   };
 
   const handleMapperTagsChange = (tags) => {
@@ -52,22 +50,39 @@ export default function FavoriteSection({ beatmaps }) {
         removeFavoriteMapper(activeProfile, mapper, setFavoriteMappers);
       }
     });
-    filterBeatmaps(currentProfileArtists, tags);
+    updateFilters(currentProfileArtists, tags);
   };
 
-  const filterBeatmaps = (artists, mappers) => {
+  const handleArtistTagToggle = (tag) => {
+    const newTags = currentProfileArtists.includes(tag)
+      ? currentProfileArtists.filter(t => t !== tag)
+      : [...currentProfileArtists, tag];
+    handleArtistTagsChange(newTags);
+  };
+
+  const handleMapperTagToggle = (tag) => {
+    const newTags = currentProfileMappers.includes(tag)
+      ? currentProfileMappers.filter(t => t !== tag)
+      : [...currentProfileMappers, tag];
+    handleMapperTagsChange(newTags);
+  };
+
+  const updateFilters = (artists, mappers) => {
     const filtered = beatmaps.filter(beatmap => {
       const artistMatch = artists.length === 0 || artists.includes(beatmap.artist);
       const mapperMatch = mappers.length === 0 || mappers.includes(beatmap.creator);
       return artistMatch && mapperMatch;
     });
-    setFilteredBeatmaps(filtered);
+    onFilter(filtered);
   };
 
   const mapBeatmapsToTagItems = (type) => {
-    return beatmaps.map(beatmap => ({
-      name: type === 'artist' ? beatmap.artist : beatmap.creator,
-      tags: [type === 'artist' ? beatmap.artist : beatmap.creator]
+    const uniqueItems = new Set(beatmaps.map(beatmap => 
+      type === 'artist' ? beatmap.artist : beatmap.creator
+    ));
+    return Array.from(uniqueItems).map(name => ({
+      name,
+      tags: [name]
     }));
   };
 
@@ -78,6 +93,7 @@ export default function FavoriteSection({ beatmaps }) {
         <CustomTags 
           items={mapBeatmapsToTagItems('mapper')}
           selectedTags={currentProfileMappers}
+          onTagToggle={handleMapperTagToggle}
         />
         <TagInput 
           onTagsChange={handleMapperTagsChange}
@@ -91,6 +107,7 @@ export default function FavoriteSection({ beatmaps }) {
         <CustomTags 
           items={mapBeatmapsToTagItems('artist')}
           selectedTags={currentProfileArtists}
+          onTagToggle={handleArtistTagToggle}
         />
         <TagInput 
           onTagsChange={handleArtistTagsChange}

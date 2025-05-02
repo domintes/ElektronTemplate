@@ -3,9 +3,8 @@ import { useAtom } from 'jotai';
 import { filteredBeatmapsAtom } from '../../store';
 import './customTags.scss';
 
-export default function CustomTags({ items, selectedTags = [] }) {
+export default function CustomTags({ items, selectedTags = [], onTagToggle }) {
     const [uniqueTags, setUniqueTags] = useState([]);
-    const [, setFilteredBeatmaps] = useAtom(filteredBeatmapsAtom);
 
     useEffect(() => {
         // Generate unique list of tags from provided items
@@ -13,13 +12,11 @@ export default function CustomTags({ items, selectedTags = [] }) {
         setUniqueTags(allTags);
     }, [items]);
 
-    useEffect(() => {
-        // Filter items based on selected tags
-        const filtered = items.filter(item =>
-            selectedTags.length === 0 || selectedTags.includes(item.name)
-        );
-        setFilteredBeatmaps(filtered);
-    }, [selectedTags, items, setFilteredBeatmaps]);
+    const handleTagClick = (tag) => {
+        if (onTagToggle) {
+            onTagToggle(tag);
+        }
+    };
 
     return (
         <div className="customtags-container">
@@ -34,6 +31,7 @@ export default function CustomTags({ items, selectedTags = [] }) {
                             className={`tag-button ${
                                 selectedTags.includes(tag) ? 'tag-button-active' : ''
                             } ${tagCount === 0 ? 'tag-button-disabled' : ''}`}
+                            onClick={() => handleTagClick(tag)}
                             disabled={tagCount === 0}
                         >
                             {tag} ({tagCount})
