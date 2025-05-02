@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const { app, BrowserWindow, ipcMain, dialog, session } = require('electron')
 const path = require('path')
+const fs = require('fs')
 const { createReadStream } = require('fs')
 const { createInterface } = require('readline')
 const glob = require('glob')
@@ -303,42 +304,58 @@ async function parseOsuFile(filePath) {
   }
 }
 
+// Funkcja do usuwania pustych katalogów
+async function removeEmptyDir(dirPath, sourceFolderPath) {
+  try {
+    // Odczytaj zawartość katalogu
+    const files = await glob.glob('*', { cwd: dirPath, absolute: true });
+    if (files.length === 0) {
+      // Sprawdź, czy to nie jest główny katalog beatmap przed usunięciem
+      const parentDir = path.dirname(dirPath);
+      const isBeatmapRoot = sourceFolderPath === parentDir;
+      if (!isBeatmapRoot) {
+        await fs.promises.rmdir(dirPath);
+        console.log(`Usunięto pusty katalog: ${dirPath}`);
+      }
+    }
+  } catch (error) {
+    console.error(`Błąd przy usuwaniu katalogu ${dirPath}:`, error);
+  }
+}
+
 // Funkcja przenosząca beatmapy do wybranego folderu
 async function moveBeatmaps(beatmapIds, destinationFolder) {
   try {
-    const moved = []
+    const moved = [];
     
     for (const beatmapId of beatmapIds) {
-      const sourceFolderPath = beatmapId
-      const folderName = path.basename(sourceFolderPath)
-      const destinationPath = path.join(destinationFolder, folderName)
+      const sourceFolderPath = beatmapId;
+      const folderName = path.basename(sourceFolderPath);
+      const destinationPath = path.join(destinationFolder, folderName);
       
-      // Utwórz folder docelowy, jeśli nie istnieje
+      // Przenieś cały folder beatmap zamiast pojedynczych plików
       try {
-        await mkdir(destinationPath, { recursive: true })
+        // Utwórz folder docelowy, jeśli nie istnieje
+        await mkdir(path.dirname(destinationPath), { recursive: true });
+        
+        // Przenieś cały folder
+        await rename(sourceFolderPath, destinationPath);
+        console.log(`Przeniesiono folder z ${sourceFolderPath} do ${destinationPath}`);
+        
+        // Wyczyść puste foldery nadrzędne po przeniesieniu
+        const parentDir = path.dirname(sourceFolderPath);
+        await removeEmptyDir(parentDir, sourceFolderPath);
+        
+        moved.push(beatmapId);
       } catch (error) {
-        // Ignoruj błąd, jeśli folder już istnieje
-        if (error.code !== 'EEXIST') {
-          throw error
-        }
+        console.error(`Błąd przy przenoszeniu beatmapy ${sourceFolderPath}:`, error);
+        throw error;
       }
-      
-      // Znajdź wszystkie pliki w folderze źródłowym
-      const files = await glob.glob('*', { cwd: sourceFolderPath, absolute: true })
-      
-      // Przenieś każdy plik do folderu docelowego
-      for (const file of files) {
-        const fileName = path.basename(file)
-        const destination = path.join(destinationPath, fileName)
-        await rename(file, destination)
-      }
-      
-      moved.push(beatmapId)
     }
     
-    return moved
+    return moved;
   } catch (error) {
-    console.error('Błąd przy przenoszeniu beatmap:', error)
-    throw error
+    console.error('Błąd przy przenoszeniu beatmap:', error);
+    throw error;
   }
 }
