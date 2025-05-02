@@ -4,7 +4,7 @@ const path = require('path')
 const fs = require('fs')
 const { createReadStream } = require('fs')
 const { createInterface } = require('readline')
-const glob = require('glob')
+const { glob } = require('glob')
 const { dirname } = require('path')
 const { rename, mkdir } = require('fs/promises')
 const process = require('node:process')
@@ -139,30 +139,63 @@ function setupIpcHandlers() {
 // Funkcja znajdująca wszystkie pliki .osu w folderze i odczytująca ich metadane
 async function findBeatmaps(folderPath) {
   try {
-    // Znajdź wszystkie pliki .osu rekurencyjnie
-    const osuFiles = await glob.glob('**/*.osu', { cwd: folderPath, absolute: true })
-    
-    // Mapa do śledzenia folderów beatmap (aby uniknąć duplikatów)
-    const beatmapFolders = new Map()
-    // Mapa do grupowania beatmap wg folderu i tytułu+artysta
-    const uniqueBeatmaps = new Map()
+    // Ustaw timeout na 5 minut dla bardzo dużych folderów
+    const timeout = setTimeout(() => {
+      throw new Error('Przekroczono limit czasu wyszukiwania (5 minut). Folder może być zbyt duży lub zawierać zbyt wiele plików.')
+    }, 5 * 60 * 1000)
 
-    // Przetwarzanie plików partiami (batch/pool)
-    const BATCH_SIZE = 100
+    let totalFiles = 0
+    let processedFiles = 0
+    let lastProgressUpdate = Date.now()
+    const PROGRESS_UPDATE_INTERVAL = 1000 // 1 sekunda
+
+    // Najpierw policz wszystkie pliki .osu
+    const files = await glob('**/*.osu', { 
+      cwd: folderPath, 
+      absolute: true,
+      nocase: true, // Case-insensitive search
+      dot: true,    // Include hidden files
+      windowsPathsNoEscape: true // Better Windows path handling
+    })
+    
+    totalFiles = files.length
+    if (totalFiles === 0) {
+      clearTimeout(timeout)
+      return []
+    }
+
+    // Mapa do śledzenia folderów beatmap
+    const beatmapFolders = new Map()
+    const uniqueBeatmaps = new Map()
+    const errors = []
+
+    // Znajdź wszystkie pliki .osu rekurencyjnie
+    const osuFiles = files // We already have the files, no need to search again
+
+    // Przetwarzanie plików partiami
+    const BATCH_SIZE = 50 // Zmniejszony rozmiar partii
     let beatmaps = []
-    let loaded = 0
-    const total = osuFiles.length
+
     for (let i = 0; i < osuFiles.length; i += BATCH_SIZE) {
       const batch = osuFiles.slice(i, i + BATCH_SIZE)
       const beatmapsBatch = await Promise.all(batch.map(async (osuFilePath) => {
         try {
           const folderPath = dirname(osuFilePath)
           if (beatmapFolders.has(folderPath)) return null
+
+          // Sprawdź czy ścieżka nie jest za długa
+          if (osuFilePath.length > 255 || folderPath.length > 255) {
+            throw new Error('Ścieżka pliku jest za długa')
+          }
+
           const metadata = await parseOsuFile(osuFilePath)
           if (!metadata) return null
+
           beatmapFolders.set(folderPath, true)
           const beatmapKey = `${metadata.artist}_${metadata.title}_${folderPath}`
+          
           if (uniqueBeatmaps.has(beatmapKey)) return null
+
           const beatmap = {
             id: folderPath,
             path: folderPath,
@@ -172,21 +205,42 @@ async function findBeatmaps(folderPath) {
           uniqueBeatmaps.set(beatmapKey, beatmap)
           return beatmap
         } catch (error) {
-          console.error(`Błąd przy przetwarzaniu pliku ${osuFilePath}:`, error)
+          errors.push(`Błąd przy przetwarzaniu ${osuFilePath}: ${error.message}`)
           return null
         }
       }))
+
       beatmaps = beatmaps.concat(beatmapsBatch.filter(b => b !== null))
-      loaded += batch.length
-      if (typeof mainWindow !== 'undefined' && mainWindow && mainWindow.webContents) {
-        mainWindow.webContents.send('beatmaps-progress', { loaded: Math.min(loaded, total), total })
+      processedFiles += batch.length
+
+      // Aktualizuj postęp nie częściej niż co sekundę
+      const now = Date.now()
+      if (now - lastProgressUpdate >= PROGRESS_UPDATE_INTERVAL) {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('beatmaps-progress', {
+            loaded: processedFiles,
+            total: totalFiles,
+            errors: errors.length > 0 ? errors : undefined
+          })
+        }
+        lastProgressUpdate = now
       }
     }
-    // Sortowanie po artyście
-    beatmaps.sort((a, b) => a.artist.localeCompare(b.artist))
-    return beatmaps
+
+    clearTimeout(timeout)
+
+    // Raportuj błędy na końcu
+    if (errors.length > 0) {
+      console.warn(`Znaleziono ${errors.length} błędów podczas wyszukiwania:`)
+      errors.forEach(err => console.warn(err))
+    }
+
+    return beatmaps.sort((a, b) => a.artist.localeCompare(b.artist))
   } catch (error) {
     console.error('Błąd przy wyszukiwaniu beatmap:', error)
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('error', `Błąd przy wyszukiwaniu beatmap: ${error.message}`)
+    }
     throw error
   }
 }
@@ -308,7 +362,7 @@ async function parseOsuFile(filePath) {
 async function removeEmptyDir(dirPath, sourceFolderPath) {
   try {
     // Odczytaj zawartość katalogu
-    const files = await glob.glob('*', { cwd: dirPath, absolute: true });
+    const files = await glob('*', { cwd: dirPath, absolute: true });
     if (files.length === 0) {
       // Sprawdź, czy to nie jest główny katalog beatmap przed usunięciem
       const parentDir = path.dirname(dirPath);

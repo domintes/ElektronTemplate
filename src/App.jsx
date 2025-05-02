@@ -479,9 +479,45 @@ function App() {
       
       {loading ? (
         <div className="loading">
-          {progress && progress.total > 0
-            ? `Wczytano ${progress.loaded} / ${progress.total}...`
-            : 'Ładowanie...'}
+          {progress ? (
+            <div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill"
+                  style={{ 
+                    width: `${(progress.loaded / progress.total) * 100}%`,
+                    backgroundColor: progress.errors ? '#e74c3c' : '#4361ee'
+                  }}
+                />
+              </div>
+              <div className="progress-text">
+                Wczytano {progress.loaded} z {progress.total} plików
+                {progress.errors && progress.errors.length > 0 && (
+                  <div className="progress-errors">
+                    Znaleziono {progress.errors.length} błędów
+                    <button 
+                      onClick={() => setMessage(progress.errors.join('\n'))}
+                      className="show-errors-btn"
+                    >
+                      Pokaż szczegóły
+                    </button>
+                  </div>
+                )}
+              </div>
+              {progress.loaded === progress.total && (
+                <div className="progress-estimate">
+                  Przetwarzanie zakończone. Trwa ładowanie wyników...
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              Inicjalizacja...
+              <div className="loading-warning">
+                To może potrwać do 5 minut dla dużych folderów (~100GB)
+              </div>
+            </>
+          )}
         </div>
       ) : beatmaps.length > 0 ? (
         <>

@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('electron', {
         'destination-folder-selected',
         'beatmaps-found',
         'beatmaps-moved',
+        'beatmaps-progress',
         'error'
       ]
       if (validChannels.includes(channel)) {
