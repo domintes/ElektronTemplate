@@ -1,0 +1,47 @@
+.tag-button {
+    color: gray;
+    border-radius: 25px;
+    padding: 8px 12px;
+    font-size: 15px;
+    margin: 0 8px 8px;
+    font-weight: 500;
+    font-family: 'Orbitron';
+    background-color: #131020;
+    border: 1px solid #585b69;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s all;
+
+    &:hover {
+        border: 1px solid rgb(118, 172, 118);
+    }
+}
+
+.tag-button:focus,
+.tag-button:focus-visible {
+    outline: none;
+}
+
+button.tag-button:hover {
+    color: #4bbd4b;
+    cursor: pointer;
+    background-color: #33333d;
+}
+
+.tag-button-active {
+    color: #72ff72;
+    border-color: #4bbd4b;
+}
+
+.tag-button-disabled {
+    border-color: #111111 !important;
+    background-color: rgb(27, 27, 27) !important;
+    cursor: default !important;
+    color: rgb(48, 48, 48);
+}
+
+.tag-button-disabled:hover {
+    background-color: #131020;
+    cursor: default;
+    color: rgb(49, 49, 49) !important;
+}

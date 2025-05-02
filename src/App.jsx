@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useAtom } from 'jotai'
+import { activeProfileAtom } from './store'
 import ProfileSelector from './ProfileSelector'
 import ProfileManager from './ProfileManager'
 import SettingsDrawer from './SettingsDrawer'
 import Menu from './Menu'
+import FavoriteSection from './components/FavoriteSection/FavoriteSection'
 import './App.css'
 
 // Sprawdzanie, czy aplikacja działa w środowisku Electron
@@ -53,6 +56,8 @@ function App() {
   const [showProfileManager, setShowProfileManager] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   
+  const [, setActiveProfileAtom] = useAtom(activeProfileAtom);
+
   // Sprawdzenie środowiska przy montowaniu komponentu
   useEffect(() => {
     setIsElectronEnv(isElectron())
@@ -302,15 +307,18 @@ function App() {
   // Profile actions
   const handleSelectProfile = (profile) => {
     setActiveProfile(profile)
+    setActiveProfileAtom(profile)
     setShowProfileSelector(false)
   }
   const handleCreateProfile = (name) => {
     setProfiles(p => [...p, name])
     setActiveProfile(name)
+    setActiveProfileAtom(name)
     setShowProfileSelector(false)
   }
   const handleSwitchProfile = (profile) => {
     setActiveProfile(profile)
+    setActiveProfileAtom(profile)
     setShowProfileManager(false)
   }
   const handleDeleteProfile = (profile) => {
@@ -350,10 +358,23 @@ function App() {
         onProfileManager={() => setShowProfileManager(true)}
         onExit={handleExit}
       />
+
+      {showProfileManager && (
+        <ProfileManager
+          profiles={profiles}
+          activeProfile={activeProfile}
+          onSwitch={handleSwitchProfile}
+          onCreate={handleCreateProfile}
+          onDelete={handleDeleteProfile}
+          onClose={() => setShowProfileManager(false)}
+        />
+      )}
+
       <div className="app-header">
         <h1>Osu! Beatmap Manager</h1>
-        {/* Removed old theme toggle button, now in Menu */}
       </div>
+
+      <FavoriteSection beatmaps={beatmaps} />
       
       {!isElectronEnv && (
         <div className="web-notice">
