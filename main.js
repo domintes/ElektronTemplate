@@ -9,6 +9,11 @@ const { dirname } = require('path')
 const { rename, mkdir } = require('fs/promises')
 const process = require('node:process')
 
+// Enable Windows long path support
+if (process.platform === 'win32') {
+  process.env.ELECTRON_ENABLE_LONG_PATH_SUPPORT = 'true';
+}
+
 // Główne okno aplikacji
 let mainWindow
 
@@ -149,14 +154,16 @@ async function findBeatmaps(folderPath) {
     let lastProgressUpdate = Date.now()
     const PROGRESS_UPDATE_INTERVAL = 1000 // 1 sekunda
 
-    // Najpierw policz wszystkie pliki .osu
-    const files = await glob('**/*.osu', { 
-      cwd: folderPath, 
-      absolute: true,
+    // Updated glob options - removed conflicting options
+    const globOptions = { 
+      cwd: folderPath,
       nocase: true, // Case-insensitive search
       dot: true,    // Include hidden files
       windowsPathsNoEscape: true // Better Windows path handling
-    })
+    }
+
+    // Get all .osu files
+    const files = await glob('**/*.osu', globOptions)
     
     totalFiles = files.length
     if (totalFiles === 0) {
@@ -169,11 +176,11 @@ async function findBeatmaps(folderPath) {
     const uniqueBeatmaps = new Map()
     const errors = []
 
-    // Znajdź wszystkie pliki .osu rekurencyjnie
-    const osuFiles = files // We already have the files, no need to search again
+    // Convert relative paths to absolute
+    const osuFiles = files.map(file => path.resolve(folderPath, file))
 
     // Przetwarzanie plików partiami
-    const BATCH_SIZE = 50 // Zmniejszony rozmiar partii
+    const BATCH_SIZE = 50
     let beatmaps = []
 
     for (let i = 0; i < osuFiles.length; i += BATCH_SIZE) {
@@ -183,9 +190,16 @@ async function findBeatmaps(folderPath) {
           const folderPath = dirname(osuFilePath)
           if (beatmapFolders.has(folderPath)) return null
 
-          // Sprawdź czy ścieżka nie jest za długa
-          if (osuFilePath.length > 255 || folderPath.length > 255) {
-            throw new Error('Ścieżka pliku jest za długa')
+          // Handle long paths
+          if (osuFilePath.length > 255) {
+            console.warn(`Długa ścieżka pliku (${osuFilePath.length} znaków): ${osuFilePath}`)
+            // Try to use relative path if absolute is too long
+            const relativePath = path.relative(path.dirname(folderPath), osuFilePath)
+            if (relativePath.length <= 255) {
+              osuFilePath = path.resolve(folderPath, relativePath)
+            } else {
+              throw new Error(`Ścieżka pliku jest za długa (${osuFilePath.length} znaków). Spróbuj przenieść pliki do katalogu o krótszej nazwie.`)
+            }
           }
 
           const metadata = await parseOsuFile(osuFilePath)

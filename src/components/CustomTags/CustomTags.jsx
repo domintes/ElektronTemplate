@@ -5,15 +5,26 @@ import './customTags.scss';
 
 export default function CustomTags({ items, selectedTags = [], onTagToggle }) {
     const [uniqueTags, setUniqueTags] = useState([]);
+    const [tagCounts, setTagCounts] = useState({});
 
     useEffect(() => {
-        // Generate unique list of tags from provided items
-        const allTags = Array.from(new Set(items.map(item => item.name)));
-        setUniqueTags(allTags);
+        // Generate unique list of tags and their counts
+        const counts = {};
+        const uniqueSet = new Set();
+
+        items.forEach(item => {
+            if (item.name) {
+                uniqueSet.add(item.name);
+                counts[item.name] = (counts[item.name] || 0) + 1;
+            }
+        });
+
+        setUniqueTags(Array.from(uniqueSet));
+        setTagCounts(counts);
     }, [items]);
 
     const handleTagClick = (tag) => {
-        if (onTagToggle) {
+        if (onTagToggle && tagCounts[tag] > 0) {
             onTagToggle(tag);
         }
     };
@@ -22,19 +33,21 @@ export default function CustomTags({ items, selectedTags = [], onTagToggle }) {
         <div className="customtags-container">
             <div className="tags-list">
                 {uniqueTags.map((tag, index) => {
-                    // Count items with this tag
-                    const tagCount = items.filter(item => item.name === tag).length;
+                    const count = tagCounts[tag] || 0;
+                    const isActive = selectedTags.includes(tag);
+                    const displayName = `${tag} (${count})`;
 
                     return (
                         <button
                             key={index}
                             className={`tag-button ${
-                                selectedTags.includes(tag) ? 'tag-button-active' : ''
-                            } ${tagCount === 0 ? 'tag-button-disabled' : ''}`}
+                                isActive ? 'tag-button-active' : ''
+                            } ${count === 0 ? 'tag-button-disabled' : ''}`}
                             onClick={() => handleTagClick(tag)}
-                            disabled={tagCount === 0}
+                            disabled={count === 0}
+                            title={displayName}
                         >
-                            {tag} ({tagCount})
+                            {displayName}
                         </button>
                     );
                 })}

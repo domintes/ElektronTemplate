@@ -41,18 +41,62 @@
     color: white;
     font-size: 14px;
     cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
 }
 
 .tag-form {
     display: flex;
     gap: 10px;
+    width: 100%;
+    position: relative;
+}
+
+.tag-input-wrapper {
+    position: relative;
+    flex: 1;
 }
 
 .tag-input {
+    width: 100%;
     padding: 5px 10px;
     border: 1px solid #007bff;
     border-radius: 5px;
     outline: none;
+    font-size: 14px;
+}
+
+.suggestions-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 4px;
+    padding: 0;
+    list-style: none;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+
+    &:hover {
+        background-color: #f5f5f5;
+    }
 }
 
 .add-tag-btn {
@@ -62,4 +106,36 @@
     padding: 5px 10px;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+
+    &:hover {
+        background: #0056b3;
+    }
+}
+
+// Dark mode styles
+body.dark-mode {
+    .suggestions-list {
+        background: #2c2c2c;
+        border-color: #444;
+    }
+
+    .suggestion-item {
+        color: #e0e0e0;
+
+        &:hover {
+            background-color: #383838;
+        }
+    }
+
+    .tag-input {
+        background-color: #2c2c2c;
+        border-color: #444;
+        color: #e0e0e0;
+
+        &::placeholder {
+            color: #888;
+        }
+    }
 }

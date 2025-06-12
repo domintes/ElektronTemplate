@@ -76,14 +76,26 @@ export default function FavoriteSection({ beatmaps, onFilter }) {
     onFilter(filtered);
   };
 
+  const countItems = (type) => {
+    const counts = {};
+    beatmaps.forEach(beatmap => {
+      const key = type === 'artist' ? beatmap.artist : beatmap.creator;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  };
+
   const mapBeatmapsToTagItems = (type) => {
-    const uniqueItems = new Set(beatmaps.map(beatmap => 
-      type === 'artist' ? beatmap.artist : beatmap.creator
-    ));
-    return Array.from(uniqueItems).map(name => ({
-      name,
-      tags: [name]
-    }));
+    const counts = countItems(type);
+    // Only include items that appear more than once
+    const itemsWithMultipleMaps = Object.entries(counts)
+      .filter(([_, count]) => count > 1)
+      .map(([name, count]) => ({
+        name,
+        count,
+        tags: [name]
+      }));
+    return itemsWithMultipleMaps;
   };
 
   return (
@@ -99,6 +111,7 @@ export default function FavoriteSection({ beatmaps, onFilter }) {
           onTagsChange={handleMapperTagsChange}
           initialTags={currentProfileMappers}
           placeholder="Add mapper to favorites..."
+          suggestions={mapBeatmapsToTagItems('mapper')}
         />
       </div>
 
@@ -113,6 +126,7 @@ export default function FavoriteSection({ beatmaps, onFilter }) {
           onTagsChange={handleArtistTagsChange}
           initialTags={currentProfileArtists}
           placeholder="Add artist to favorites..."
+          suggestions={mapBeatmapsToTagItems('artist')}
         />
       </div>
     </div>
