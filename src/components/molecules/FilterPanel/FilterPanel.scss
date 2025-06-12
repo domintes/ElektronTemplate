@@ -1,0 +1,402 @@
+// FilterPanel.scss - Advanced filter component for beatmap search
+
+.filter-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+  overflow: hidden;
+
+  &.expanded {
+    .filter-header {
+      border-bottom: 1px solid var(--border-color);
+    }
+  }
+
+  &.collapsed {
+    .filter-content {
+      display: none;
+    }
+  }
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+
+  .filter-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+
+    .filter-icon {
+      color: var(--accent-color);
+      font-size: var(--font-size-sm);
+    }
+
+    .active-indicator {
+      background: var(--accent-color);
+      color: white;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      min-width: 18px;
+      text-align: center;
+      line-height: 1.2;
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-size: var(--font-size-xs);
+
+      &:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        transform: scale(1.05);
+      }
+
+      &.clear-filters-btn {
+        background: var(--error-alpha);
+        color: var(--error-color);
+
+        &:hover {
+          background: var(--error-color);
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+.filter-content {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-tertiary) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+  }
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  .filter-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+
+    .label-icon {
+      color: var(--text-secondary);
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  .filter-select {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    transition: var(--transition-fast);
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px var(--accent-color-alpha);
+    }
+
+    &:hover {
+      border-color: var(--border-hover);
+    }
+  }
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  .range-input {
+    flex: 1;
+    padding: var(--space-2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    text-align: center;
+    transition: var(--transition-fast);
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px var(--accent-color-alpha);
+    }
+
+    &:hover {
+      border-color: var(--border-hover);
+    }
+
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    // Remove number input arrows
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &[type=number] {
+      -moz-appearance: textfield;
+    }
+  }
+
+  .range-separator {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+  }
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    padding: var(--space-1) 0;
+    transition: var(--transition-fast);
+
+    &:hover {
+      .checkbox-label {
+        color: var(--text-primary);
+      }
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: var(--bg-primary);
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-fast);
+
+      &:checked {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+
+        &::after {
+          content: '✓';
+          position: absolute;
+          top: -1px;
+          left: 2px;
+          color: white;
+          font-size: 12px;
+          font-weight: bold;
+        }
+      }
+
+      &:hover {
+        border-color: var(--accent-color);
+      }
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--accent-color-alpha);
+      }
+    }
+
+    .checkbox-label {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      transition: var(--transition-fast);
+      user-select: none;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .filter-panel {
+    border-radius: var(--radius-md);
+  }
+
+  .filter-content {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .filter-group {
+    gap: var(--space-1);
+
+    .filter-label {
+      font-size: var(--font-size-xs);
+    }
+
+    .filter-select,
+    .range-input {
+      font-size: var(--font-size-xs);
+      padding: var(--space-1) var(--space-2);
+    }
+  }
+
+  .range-inputs {
+    flex-direction: column;
+    align-items: stretch;
+
+    .range-separator {
+      text-align: center;
+      font-size: var(--font-size-xs);
+    }
+  }
+}
+
+// Compact mode
+.filter-panel.compact {
+  .filter-header {
+    padding: var(--space-3);
+
+    .filter-title {
+      font-size: var(--font-size-sm);
+      gap: var(--space-1);
+
+      .filter-icon {
+        font-size: var(--font-size-xs);
+      }
+    }
+
+    .filter-actions button {
+      width: 24px;
+      height: 24px;
+      font-size: 10px;
+    }
+  }
+
+  .filter-content {
+    padding: var(--space-4);
+    gap: var(--space-3);
+    max-height: 400px;
+  }
+
+  .filter-group {
+    gap: var(--space-1);
+
+    .filter-label {
+      font-size: var(--font-size-xs);
+    }
+
+    .filter-select,
+    .range-input {
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--font-size-xs);
+    }
+  }
+}
+
+// Dark mode enhancements
+@media (prefers-color-scheme: dark) {
+  .filter-panel {
+    box-shadow: 
+      var(--shadow-md),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .filter-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .range-input,
+  .filter-select {
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .filter-panel {
+    border-width: 2px;
+  }
+
+  .range-input,
+  .filter-select {
+    border-width: 2px;
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    border-width: 3px;
+  }
+}

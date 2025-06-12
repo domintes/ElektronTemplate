@@ -7,7 +7,7 @@ import Sidebar from './components/organisms/Sidebar/Sidebar'
 import LocalCollection from './pages/LocalCollection/LocalCollection'
 import Collection from './pages/Collection/Collection'
 import Settings from './pages/Settings/Settings'
-import './App.scss'
+import './App.css'
 
 // Sprawdzanie, czy aplikacja działa w środowisku Electron
 const isElectron = () => {
@@ -106,9 +106,10 @@ function App() {
       />
     )
   }
+
   return (
     <Router>
-      <div className={`app ${darkMode ? 'dark-mode' : ''}`} data-theme={darkMode ? 'dark' : 'light'}>
+      <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
         <Sidebar 
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}

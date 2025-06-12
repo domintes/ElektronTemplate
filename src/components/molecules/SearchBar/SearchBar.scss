@@ -1,0 +1,220 @@
+// SearchBar.scss - Basic search component styles
+// Used as a molecule component throughout the application
+
+.search-bar {
+  position: relative;
+  width: 100%;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+
+  // Smooth transitions
+  * {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // Search input container
+  .search-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--accent-color);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:focus-within {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.1);
+    }
+  }
+
+  // Search icon
+  .search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  // Search input
+  .search-input {
+    flex: 1;
+    height: 40px;
+    padding: 0 12px 0 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 400;
+
+    &::placeholder {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+  }
+
+  // Loading spinner
+  .search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-right: 6px;
+
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border-color);
+      border-top: 2px solid var(--accent-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  // Clear button
+  .clear-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-right: 6px;
+    border: none;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      transform: scale(1.05);
+    }
+  }
+
+  // Suggestions list
+  .suggestions-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    
+    // Smooth appearance
+    animation: slideIn 0.15s ease-out;
+  }
+
+  // Individual suggestion item
+  .suggestion-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    gap: 8px;
+
+    &:hover,
+    &.selected {
+      background: var(--bg-hover);
+    }
+
+    &.selected {
+      background: var(--accent-color-alpha);
+    }
+
+    .suggestion-icon {
+      color: var(--text-secondary);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .suggestion-text {
+      font-size: 13px;
+      color: var(--text-primary);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // Compact variant
+  &.compact {
+    .search-input-container {
+      .search-input {
+        height: 36px;
+        font-size: 13px;
+      }
+
+      .search-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+      }
+    }
+  }
+
+  // Rounded variant
+  &.rounded {
+    .search-input-container {
+      border-radius: 20px;
+    }
+
+    .suggestions-list {
+      border-radius: 12px;
+    }
+  }
+}
+
+// Keyframe animation
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Mobile responsive
+@media (max-width: 640px) {
+  .search-bar {
+    .suggestions-list {
+      left: -8px;
+      right: -8px;
+      max-height: 250px;
+    }
+  }
+}
