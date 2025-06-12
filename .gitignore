@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+osuverse_old
 
 # Editor directories and files
 .vscode/*

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAtom } from 'jotai'
 import { activeProfileAtom } from './store'
 import ProfileSelector from './ProfileSelector'
-import Sidebar from './components/organisms/Sidebar/Sidebar'
+import Navbar from './components/organisms/Navbar/Navbar'
 import LocalCollection from './pages/LocalCollection/LocalCollection'
 import Collection from './pages/Collection/Collection'
 import Settings from './pages/Settings/Settings'
@@ -17,7 +17,6 @@ const isElectron = () => {
 function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [isElectronEnv, setIsElectronEnv] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   
   // Profile state
   const [profiles, setProfiles] = useState(() => {
@@ -105,23 +104,19 @@ function App() {
         setRememberChoice={setRememberChoice}
       />
     )
-  }
-  return (
+  }  return (
     <Router>
       <div className={`app ${darkMode ? 'dark-mode' : ''}`} data-theme={darkMode ? 'dark' : 'light'}>
-        <Sidebar 
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        <Navbar 
+          onManageProfiles={() => setShowProfileSelector(true)}
           darkMode={darkMode}
           onThemeToggle={toggleDarkMode}
           activeProfile={activeProfile}
           profiles={profiles}
-          onProfileSwitch={handleSelectProfile}
-          onProfileCreate={handleCreateProfile}
           isElectronEnv={isElectronEnv}
         />
         
-        <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <main className="main-content">
           <Routes>
             <Route path="/" element={<Navigate to="/collection" replace />} />
             <Route path="/collection" element={<Collection />} />

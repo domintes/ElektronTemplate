@@ -159,29 +159,29 @@ textarea:not([rows]) {
   --content-max-width: 1200px;
 }
 
-/* Dark theme */
+/* Dark theme - Osuverse inspired */
 [data-theme="dark"],
 .dark-mode {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --bg-tertiary: #404040;
-  --bg-hover: #333333;
-  --bg-active: #2a2a3a;
+  --bg-primary: #1a0a24;
+  --bg-secondary: #2f0f3a;
+  --bg-tertiary: #3a1a4d;
+  --bg-hover: #4d1a3a;
+  --bg-active: #5e236d;
   
-  --border-color: #404040;
-  --border-hover: #525252;
-  --border-focus: #bb86fc;
+  --border-color: #3a1a4d;
+  --border-hover: #4d1a3a;
+  --border-focus: #f264a4;
   
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-tertiary: #808080;
-  --text-inverse: #000000;
+  --text-primary: #f5f5f5;
+  --text-secondary: #ffc3e6;
+  --text-tertiary: #ffcae6;
+  --text-inverse: #1a0a24;
   
-  --accent-color: #bb86fc;
-  --accent-hover: #d4b3ff;
-  --accent-active: #9c64e6;
-  --accent-color-alpha: rgba(187, 134, 252, 0.15);
-  --accent-color-alpha-hover: rgba(187, 134, 252, 0.25);
+  --accent-color: #f264a4;
+  --accent-hover: #ffaed7;
+  --accent-active: #ff7bb3;
+  --accent-color-alpha: rgba(242, 100, 164, 0.15);
+  --accent-color-alpha-hover: rgba(242, 100, 164, 0.25);
   
   --success-color: #4caf50;
   --success-alpha: rgba(76, 175, 80, 0.15);
@@ -192,15 +192,58 @@ textarea:not([rows]) {
   --info-color: #2196f3;
   --info-alpha: rgba(33, 150, 243, 0.15);
   
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px rgba(47, 15, 58, 0.5);
+  --shadow-md: 0 4px 6px rgba(47, 15, 58, 0.6);
+  --shadow-lg: 0 10px 15px rgba(47, 15, 58, 0.7);
+  --shadow-xl: 0 20px 25px rgba(47, 15, 58, 0.8);
+}
+
+/* === FONT IMPORTS === */
+@font-face {
+  font-family: 'Orbitron';
+  src: url('/fonts/Orbitron.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bruno Ace';
+  src: url('/fonts/BrunoAce-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cracked Code';
+  src: url('/fonts/Cracked-Code.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Rubik Glitch';
+  src: url('/fonts/Rubik-Glitch.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Neotriad';
+  src: url('/fonts/Neotriad.otf') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Glitch Inside';
+  src: url('/fonts/Glitch-Inside.otf') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Guardian';
+  src: url('/fonts/Guardian.ttf') format('truetype');
+  font-display: swap;
 }
 
 /* === BASE STYLES === */
 html {
-  font-family: var(--font-family-sans);
+  font-family: 'Orbitron', 'Bruno Ace', 'Rubik Glitch', 'Cracked Code', 'Segoe UI', 'Arial', sans-serif;
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   font-synthesis: none;
@@ -215,10 +258,23 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-weight: var(--font-weight-normal);
-  transition: var(--transition-base);
+  background: linear-gradient(135deg, #2f0f3a 0%, #1a0a24 100%);
+  color: #f5f5f5;
+  font-family: 'Orbitron', 'Bruno Ace', 'Rubik Glitch', 'Cracked Code', 'Segoe UI', 'Arial', sans-serif;
+  letter-spacing: 0.01em;
+  font-size: 1.08rem;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(rgba(47, 15, 58, 0.9), rgba(0, 0, 0, 0.95)),
+    repeating-linear-gradient(90deg, rgba(242, 100, 164, 0.05) 0px, rgba(242, 100, 164, 0.05) 1px, transparent 1px, transparent 30px),
+    repeating-linear-gradient(0deg, rgba(242, 100, 164, 0.05) 0px, rgba(242, 100, 164, 0.05) 1px, transparent 1px, transparent 30px);
+  
+  /* Light theme override */
+  &[data-theme="light"] {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #212529;
+    background-image: none;
+  }
 }
 
 /* === TYPOGRAPHY === */
@@ -422,4 +478,115 @@ button:focus {
 .focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
+}
+
+/* === OSUVERSE SPECIFIC STYLES === */
+
+/* Cyberpunk neon glow for focus */
+:focus {
+  outline: 2px solid #ffaed7;
+  box-shadow: 0 0 8px #f264a499;
+}
+
+/* Scrollbar styling - Osuverse theme */
+::-webkit-scrollbar {
+  width: 10px;
+  background: #1e1420;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4D2F6C;
+  border-radius: 8px;
+  box-shadow: 0 0 8px #f264a466;
+  background-image: linear-gradient(45deg, rgba(242, 100, 164, 0.1) 25%, transparent 25%, 
+                    transparent 50%, rgba(242, 100, 164, 0.1) 50%, rgba(242, 100, 164, 0.1) 75%, 
+                    transparent 75%, transparent);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5D3F7C;
+  box-shadow: 0 0 12px #f264a499;
+}
+
+/* Neon border utility */
+.neon-border {
+  border: 2.5px solid #fff;
+  border-radius: 18px;
+  box-shadow: 0 0 32px #f264a4cc, 0 0 0 2px #fff, 0 0 80px 0 #2f0f3a55;
+}
+
+/* Grid pattern background */
+.grid-pattern {
+  background-image: 
+    repeating-linear-gradient(90deg, rgba(242, 100, 164, 0.03) 0px, rgba(242, 100, 164, 0.03) 1px, transparent 1px, transparent 16px),
+    repeating-linear-gradient(0deg, rgba(242, 100, 164, 0.03) 0px, rgba(242, 100, 164, 0.03) 1px, transparent 1px, transparent 16px);
+}
+
+/* Neon glow text */
+.neon-text {
+  color: #fff;
+  text-shadow: 0 0 8px #f264a4, 0 0 24px #f264a499;
+}
+
+/* App body for additional background effects */
+.app-body {
+  min-height: 100vh;
+  background: transparent;
+  position: relative;
+  z-index: 3;
+  background-image: 
+    repeating-linear-gradient(90deg, rgba(242, 100, 164, 0.015) 0px, rgba(242, 100, 164, 0.015) 1px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(0deg, rgba(242, 100, 164, 0.015) 0px, rgba(242, 100, 164, 0.015) 1px, transparent 1px, transparent 20px);
+}
+
+/* Animation utilities */
+.fade-in {
+  animation: fadeIn 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(24px) scale(0.98); 
+  }
+  to { 
+    opacity: 1; 
+    transform: none; 
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Glow effect for interactive elements */
+.glow-hover {
+  transition: all 0.3s ease;
+}
+
+.glow-hover:hover {
+  filter: drop-shadow(0 0 8px rgba(242, 100, 164, 0.5));
+  transform: translateY(-1px);
+}
+
+/* Custom selection colors */
+::selection {
+  background: rgba(242, 100, 164, 0.3);
+  color: #fff;
+}
+
+::-moz-selection {
+  background: rgba(242, 100, 164, 0.3);
+  color: #fff;
 }

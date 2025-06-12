@@ -2,11 +2,12 @@
 
 .app {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-family-sans);
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* Main content area */
@@ -14,15 +15,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: var(--sidebar-width);
-  min-height: 100vh;
+  min-height: calc(100vh - 70px); // Account for navbar height
   background-color: var(--bg-primary);
-  transition: var(--transition-base);
-  overflow: hidden;
-
-  &.sidebar-collapsed {
-    margin-left: var(--sidebar-width-collapsed);
-  }
+  overflow: auto;
 }
 
 /* Page containers */

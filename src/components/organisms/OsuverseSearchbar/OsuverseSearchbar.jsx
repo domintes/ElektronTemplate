@@ -1,12 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAtom } from 'jotai'
 import { useNavigate } from 'react-router-dom'
-import { 
-  collectionsAtom, 
-  beatmapsAtom, 
-  apiStateAtom,
-  searchAtom
-} from '../../store'
+import { searchAtom, collectionsAtom, beatmapsAtom, apiStateAtom } from '../../../store'
 import { 
   FaSearch, 
   FaTimes, 
@@ -53,11 +48,8 @@ const useGlobalShortcut = (shortcut, callback) => {
   }, [shortcut, callback])
 }
 
-const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
+const OsuverseSearchbar = ({ placeholder = 'Search...', autoFocus = false, compact = false }) => {
   const [query, setQuery] = useState('')
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedIndex, setSelectedIndex] = useState(-1)
   const [searchResults, setSearchResults] = useState({
     collections: [],
     userBeatmaps: [],
@@ -66,60 +58,17 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
     tags: [],
     artists: []
   })
-
-  const inputRef = useRef(null)
-  const resultsRef = useRef(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
+  const searchInputRef = useRef(null)
   const navigate = useNavigate()
-
   const [collections] = useAtom(collectionsAtom)
   const [userBeatmaps] = useAtom(beatmapsAtom)
   const [apiState] = useAtom(apiStateAtom)
   const [, setGlobalSearch] = useAtom(searchAtom)
 
   const debouncedQuery = useDebounce(query, 600)
-
-  // Global shortcut to focus search (Ctrl+K)
-  useGlobalShortcut('k', () => {
-    setIsExpanded(true)
-    inputRef.current?.focus()
-  })
-
-  // Handle clicks outside to close
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (resultsRef.current && !resultsRef.current.contains(event.target)) {
-        setIsExpanded(false)
-        setSelectedIndex(-1)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  // Auto focus if requested
-  useEffect(() => {
-    if (autoFocus && inputRef.current) {
-      inputRef.current.focus()
-    }
-  }, [autoFocus])
-  // Search logic
-  useEffect(() => {
-    if (!debouncedQuery.trim()) {
-      setSearchResults({
-        collections: [],
-        userBeatmaps: [],
-        osuBeatmaps: [],
-        mappers: [],
-        tags: [],
-        artists: []
-      })
-      setIsLoading(false)
-      return
-    }
-
-    performSearch(debouncedQuery)
-  }, [debouncedQuery, collections, userBeatmaps, performSearch])
 
   const performSearch = useCallback(async (searchQuery) => {
     setIsLoading(true)
@@ -191,18 +140,60 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
     setIsLoading(false)
   }, [collections, userBeatmaps, apiState.beatmaps])
 
+  // Global shortcut to focus search (Ctrl+K)
+  useGlobalShortcut('k', () => {
+    setIsFocused(true)
+    searchInputRef.current?.focus()
+  })
+
+  // Handle clicks outside to close
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+        setIsFocused(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Auto focus if requested
+  useEffect(() => {
+    if (autoFocus && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [autoFocus])
+
+  // Search logic
+  useEffect(() => {
+    if (!debouncedQuery.trim()) {
+      setSearchResults({
+        collections: [],
+        userBeatmaps: [],
+        osuBeatmaps: [],
+        mappers: [],
+        tags: [],
+        artists: []
+      })
+      setIsLoading(false)
+      return
+    }
+
+    performSearch(debouncedQuery)
+  }, [debouncedQuery, collections, userBeatmaps, performSearch])
+
   const handleInputChange = (e) => {
     const value = e.target.value
     setQuery(value)
-    setSelectedIndex(-1)
     
     if (value.trim()) {
-      setIsExpanded(true)
+      setIsFocused(true)
     }
   }
 
   const handleInputFocus = () => {
-    setIsExpanded(true)
+    setIsFocused(true)
     if (query.trim()) {
       performSearch(query)
     }
@@ -210,7 +201,7 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
 
   const handleClear = () => {
     setQuery('')
-    setIsExpanded(false)
+    setIsFocused(false)
     setSearchResults({
       collections: [],
       userBeatmaps: [],
@@ -219,12 +210,10 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
       tags: [],
       artists: []
     })
-    setSelectedIndex(-1)
   }
 
   const handleItemClick = (item, type) => {
-    setIsExpanded(false)
-    setSelectedIndex(-1)
+    setIsFocused(false)
     
     switch (type) {
       case 'collection':
@@ -254,7 +243,7 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
   }
 
   const handleKeyDown = (e) => {
-    if (!isExpanded) return
+    if (!isFocused) return
 
     const allResults = [
       ...searchResults.collections.map(item => ({ ...item, type: 'collection' })),
@@ -282,9 +271,9 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
         }
         break
       case 'Escape':
-        setIsExpanded(false)
+        setIsFocused(false)
         setSelectedIndex(-1)
-        inputRef.current?.blur()
+        searchInputRef.current?.blur()
         break
     }
   }
@@ -293,7 +282,7 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
     return Object.values(searchResults).reduce((total, arr) => total + arr.length, 0)
   }
 
-  const renderResultSection = (title, items, type, icon, emptyMessage) => {
+  const renderResultSection = (title, items, type, icon) => {
     if (items.length === 0) return null
 
     return (
@@ -421,17 +410,17 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
   }
 
   return (
-    <div className={`osuverse-searchbar ${compact ? 'compact' : ''} ${isExpanded ? 'expanded' : ''}`} ref={resultsRef}>
+    <div className={`osuverse-searchbar ${compact ? 'compact' : ''} ${isFocused ? 'expanded' : ''}`} ref={searchInputRef}>
       <div className="search-input-container">
         <div className="search-icon">
           <FaSearch />
         </div>
         
         <input
-          ref={inputRef}
+          ref={searchInputRef}
           type="text"
           className="search-input"
-          placeholder="Search beatmaps, collections, mappers... (Ctrl+K)"
+          placeholder={placeholder}
           value={query}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
@@ -454,14 +443,14 @@ const OsuverseSearchbar = ({ compact = false, autoFocus = false }) => {
           </button>
         )}
 
-        {!query && !isExpanded && (
+        {!query && !isFocused && (
           <div className="search-hint">
             <span>Ctrl+K</span>
           </div>
         )}
       </div>
 
-      {isExpanded && query.trim() && (
+      {isFocused && query.trim() && (
         <div className="search-results">
           {isLoading ? (
             <div className="loading-state">
