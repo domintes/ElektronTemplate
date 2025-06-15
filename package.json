@@ -6,7 +6,7 @@
     "start": "vite",
     "electron": "cross-env NODE_ENV=development electron .",
     "dev": "concurrently \"cross-env NODE_ENV=development VITE_DEV_SERVER_PORT=3001 vite --port 3001\" \"npm run electron\"",
-    "web": "cross-env NODE_ENV=development vite --port 3001",
+    "app": "cross-env NODE_ENV=development vite --port 3001",
     "build": "cross-env NODE_ENV=production vite build",
     "lint": "eslint .",
     "preview": "cross-env NODE_ENV=production vite preview"
